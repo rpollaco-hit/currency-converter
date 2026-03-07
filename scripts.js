@@ -1,49 +1,42 @@
-const DEFAULT_CONFIG = {
-  OER_APP_ID: "YOUR_APP_ID",
-  MAP_CURRENCY_TO_CCA2_URL: "./assets/currency-to-country.json",
-  FLAG_PLACEHOLDER: "./assets/flag-placeholder.svg",
-  FLAG_SIZE: "w80",
-  OER_TTL: 60 * 60 * 1000,
-  PTAX_TTL: 24 * 60 * 60 * 1000
-};
+/*
+Currency Converter – Production++ (1,2,3)
 
-const APP_CONFIG = (typeof window !== "undefined" && window.APP_CONFIG) ? window.APP_CONFIG : {};
-const urlParams = new URLSearchParams(window.location.search);
-const urlApiKey = urlParams.get("apikey") || urlParams.get("app_id") || "";
+(1) Auto moeda local (sem IP):
+  - tenta Intl.Locale().maximize() -> region
+  - fallback: navigator.language (pt-BR => BR)
+  - fallback: timezone heurística
+  - region -> moeda via mapa local REGION_TO_CURRENCY (leve)
 
-const CONFIG = {
-  ...DEFAULT_CONFIG,
-  ...APP_CONFIG,
-  OER_APP_ID: (urlApiKey || APP_CONFIG.OER_APP_ID || DEFAULT_CONFIG.OER_APP_ID).trim()
-};
+(2) Cache offline:
+  - OER latest em localStorage (TTL 1h)
+  - PTAX Venda em localStorage (TTL 24h)
 
-const DEMO_RATES = {
-  USD: 1,
-  EUR: 0.93,
-  GBP: 0.79,
-  BRL: 5.05,
-  CAD: 1.35,
-  AUD: 1.52,
-  JPY: 149.0,
-  CHF: 0.88,
-  SEK: 10.45,
-  DKK: 6.94,
-  NOK: 10.63,
-  NZD: 1.64,
-  CNY: 7.19,
-  INR: 82.95,
-  MXN: 16.92
-};
+(3) Sem internet:
+  - se fetch falhar, usa stale-cache
+  - se não houver cache, mostra mensagem
+*/
 
-const DEMO_MODE = !CONFIG.OER_APP_ID || CONFIG.OER_APP_ID === "YOUR_APP_ID";
+const OER_APP_ID = "5c2081e32d134ef2a379ef109aad3514";
 
+// Arquivos locais
+const MAP_CURRENCY_TO_CCA2_URL = "./assets/currency-to-country.json";
+const FLAG_PLACEHOLDER = "./assets/flag-placeholder.svg";
+
+// CDN das bandeiras
+const FLAG_SIZE = "w80"; // w20,w40,w80,w160...
+
+// TTLs (ms)
+const OER_TTL = 60 * 60 * 1000;        // 1h
+const PTAX_TTL = 24 * 60 * 60 * 1000;  // 24h
+
+// =====================================================
+// DOM
+// =====================================================
 const selectFrom = document.querySelector(".currency-select-from");
 const selectTo = document.querySelector(".currency-select-to");
 const inputAmount = document.querySelector(".input-amount");
 const swapButton = document.querySelector(".swap-button");
 const rateInfo = document.querySelector(".rate-info");
-const statusMessage = document.querySelector(".status-message");
-const copyResultButton = document.getElementById("copyResultButton");
 
 const fromCode = document.getElementById("fromCode");
 const fromName = document.getElementById("fromName");
@@ -55,91 +48,55 @@ const toName = document.getElementById("toName");
 const toValue = document.getElementById("toValue");
 const toFlag = document.getElementById("toFlag");
 
-const browserLang = navigator.language || "en-US";
-const uiLang = browserLang.toLowerCase().startsWith("pt") ? "pt" : "en";
-const numberFormatter = new Intl.NumberFormat(browserLang, {
-  minimumFractionDigits: 2,
-  maximumFractionDigits: 2
-});
-const currencyNames = new Intl.DisplayNames([browserLang], { type: "currency" });
+// =====================================================
+// i18n mínimo (mensagens)
+// =====================================================
+const LANG = (navigator.language || "en").toLowerCase();
+const UI_LANG = LANG.startsWith("pt") ? "pt" : "en";
 
-const messages = {
+const MSG = {
   pt: {
-    enter_amount: "Informe um valor válido para converter.",
-    same_currency: "Mesma moeda selecionada.",
-    copy_success: "Valor convertido copiado.",
-    copy_empty: "Nenhum valor convertido disponível para copiar.",
-    init_error: "Não foi possível iniciar a aplicação. Verifique a conexão e os arquivos da pasta assets.",
+    offline_using_cache: "Sem internet: usando cache salvo.",
+    offline_no_cache: "Sem internet e sem cache. Conecte para atualizar as cotações.",
     source_oer: (mode, date) => `Fonte: OpenExchangeRates (${mode}) • ${date}`,
     source_ptax: (mode, date) => `Fonte: BCB PTAX Venda (${mode}) • ${date}`,
-    source_demo: "Fonte: Demo mode com taxas simuladas.",
-    config_hint: "Dica: crie config.js com sua APP_ID ou use ?apikey=SUA_CHAVE para habilitar cotações em tempo real.",
-    demo_mode: "Modo demonstração ativo: usando taxas simuladas. Adicione sua APP_ID em config.js ou use ?apikey=SUA_CHAVE para cotações em tempo real.",
-    fallback_cache: "Cotações indisponíveis no momento. Usando cache salvo, quando disponível.",
-    offline_no_cache: "Sem conexão e sem cache disponível. Conecte-se para atualizar as cotações."
+    same_currency: "Mesma moeda selecionada."
   },
   en: {
-    enter_amount: "Enter a valid amount to convert.",
-    same_currency: "Same currency selected.",
-    copy_success: "Converted value copied.",
-    copy_empty: "No converted value available to copy.",
-    init_error: "Unable to start the application. Check your connection and the assets folder.",
+    offline_using_cache: "Offline: using saved cache.",
+    offline_no_cache: "Offline and no cache available. Connect to update rates.",
     source_oer: (mode, date) => `Source: OpenExchangeRates (${mode}) • ${date}`,
     source_ptax: (mode, date) => `Source: BCB PTAX Sell (${mode}) • ${date}`,
-    source_demo: "Source: Demo mode using simulated exchange rates.",
-    config_hint: "Tip: create config.js with your APP_ID or use ?apikey=YOUR_KEY to enable live rates.",
-    demo_mode: "Demo mode active: using simulated exchange rates. Add your APP_ID in config.js or pass ?apikey=YOUR_KEY for live rates.",
-    fallback_cache: "Live rates are unavailable right now. Using saved cache when possible.",
-    offline_no_cache: "Offline and no cache available. Connect to refresh rates."
+    same_currency: "Same currency selected."
   }
 };
 
-function t(key, ...args) {
-  const dict = messages[uiLang] || messages.en;
-  const value = dict[key];
-  return typeof value === "function" ? value(...args) : (value ?? key);
+function m(key, ...args) {
+  const dict = MSG[UI_LANG] || MSG.en;
+  const val = dict[key];
+  return typeof val === "function" ? val(...args) : (val ?? key);
 }
 
-function setStatus(message = "", type = "info") {
-  statusMessage.textContent = message;
-  statusMessage.className = "status-message";
-  if (message) {
-    statusMessage.classList.add(`is-${type}`);
-  }
-}
-
-function clearStatus() {
-  setStatus("");
-}
-
-function showConfigurationHint() {
-  if (DEMO_MODE) {
-    setStatus(`${t("demo_mode")} ${t("config_hint")}`, "info");
-  }
-}
-
-const cacheGet = (key) => {
-  try {
-    return JSON.parse(localStorage.getItem(key));
-  } catch {
-    return null;
-  }
+// =====================================================
+// Cache helpers (localStorage)
+// =====================================================
+const cacheGet = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const cacheSet = (k, v) => localStorage.setItem(k, JSON.stringify({ t: Date.now(), v }));
+const cacheFresh = (k, ttlMs) => {
+  const o = cacheGet(k);
+  return (o && (Date.now() - o.t) < ttlMs) ? o.v : null;
 };
 
-const cacheSet = (key, value) => {
-  localStorage.setItem(key, JSON.stringify({ t: Date.now(), v: value }));
-};
-
-const cacheFresh = (key, ttlMs) => {
-  const cached = cacheGet(key);
-  return cached && Date.now() - cached.t < ttlMs ? cached.v : null;
-};
-
+/**
+ * Busca com cache:
+ * - se tem fresh: retorna {data, mode:"cache"}
+ * - senão tenta API: se ok, salva e retorna {data, mode:"api"}
+ * - se API falhar e tem stale: retorna {data, mode:"stale-cache"}
+ * - se não tem nada: joga erro
+ */
 async function fetchWithCache(key, ttlMs, fetcher) {
   const fresh = cacheFresh(key, ttlMs);
-  if (fresh) {
-    return { data: fresh, mode: "cache" };
-  }
+  if (fresh) return { data: fresh, mode: "cache" };
 
   const stale = cacheGet(key)?.v;
 
@@ -147,53 +104,57 @@ async function fetchWithCache(key, ttlMs, fetcher) {
     const data = await fetcher();
     cacheSet(key, data);
     return { data, mode: "api" };
-  } catch (error) {
-    if (stale) {
-      return { data: stale, mode: "stale-cache" };
-    }
-    throw error;
+  } catch (e) {
+    if (stale) return { data: stale, mode: "stale-cache" };
+    throw e;
   }
 }
 
-function formatNumber(value) {
-  return numberFormatter.format(value);
+// =====================================================
+// Formatação / Parse
+// =====================================================
+function formatNumber(v) {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(v);
 }
 
-function parseAmount(value) {
-  const normalized = value.toString().trim().replace(/\s/g, "");
-  const lastComma = normalized.lastIndexOf(",");
-  const lastDot = normalized.lastIndexOf(".");
+function parseAmount(v) {
+  const s = v.toString().trim().replace(/\s/g, "");
+  const lastComma = s.lastIndexOf(",");
+  const lastDot = s.lastIndexOf(".");
 
   if (lastComma > -1 && lastDot > -1) {
-    if (lastDot > lastComma) {
-      return Number(normalized.replace(/,/g, ""));
-    }
-    return Number(normalized.replace(/\./g, "").replace(",", "."));
+    if (lastDot > lastComma) return Number(s.replace(/,/g, ""));
+    return Number(s.replace(/\./g, "").replace(",", "."));
   }
-
-  if (lastComma > -1) {
-    return Number(normalized.replace(/\./g, "").replace(",", "."));
-  }
-
-  return Number(normalized.replace(/,/g, ""));
+  if (lastComma > -1) return Number(s.replace(/\./g, "").replace(",", "."));
+  return Number(s.replace(/,/g, ""));
 }
 
-let currencyToCountry = {};
+// =====================================================
+// DisplayNames (nome da moeda no idioma do device)
+// =====================================================
+const currencyNames = new Intl.DisplayNames([navigator.language || "en"], { type: "currency" });
+
+// =====================================================
+// Flags (instant) via currency-to-country.json + FlagCDN
+// =====================================================
+let CURRENCY_TO_CCA2 = {};
 
 function flagUrlFromCurrency(code) {
-  const cca2 = currencyToCountry[code];
-  if (!cca2 || cca2.length !== 2) {
-    return CONFIG.FLAG_PLACEHOLDER;
-  }
-  return `https://flagcdn.com/${CONFIG.FLAG_SIZE}/${cca2.toLowerCase()}.png`;
+  const cca2 = CURRENCY_TO_CCA2[code];
+  if (!cca2 || cca2.length !== 2) return FLAG_PLACEHOLDER;
+  return `https://flagcdn.com/${FLAG_SIZE}/${cca2.toLowerCase()}.png`;
 }
 
-function setFlag(imgElement, code) {
-  imgElement.loading = "lazy";
-  imgElement.decoding = "async";
-  imgElement.referrerPolicy = "no-referrer";
-  imgElement.src = flagUrlFromCurrency(code);
-  imgElement.alt = `${code} flag`;
+function setFlag(imgEl, code) {
+  imgEl.loading = "lazy";
+  imgEl.decoding = "async";
+  imgEl.referrerPolicy = "no-referrer";
+  imgEl.src = flagUrlFromCurrency(code);
+  imgEl.alt = `${code} flag`;
 }
 
 function updateFlags() {
@@ -201,6 +162,14 @@ function updateFlags() {
   setFlag(toFlag, selectTo.value);
 }
 
+// =====================================================
+// (1) Auto moeda local (sem IP)
+// =====================================================
+
+/**
+ * Mapa leve region -> moeda.
+ * Não precisa ser “todos”, apenas os mais comuns (você pode expandir).
+ */
 const REGION_TO_CURRENCY = {
   BR: "BRL",
   US: "USD",
@@ -228,65 +197,66 @@ const REGION_TO_CURRENCY = {
 };
 
 function getRegionFromIntlLocale() {
+  // Melhor tentativa: Intl.Locale maximize (nem todos browsers suportam)
   try {
     if (typeof Intl.Locale === "function") {
-      const locale = new Intl.Locale(browserLang);
-      const maximized = locale.maximize ? locale.maximize() : locale;
-      if (maximized?.region) {
-        return String(maximized.region).toUpperCase();
-      }
+      const loc = new Intl.Locale(navigator.language);
+      const max = loc.maximize ? loc.maximize() : loc;
+      if (max && max.region) return String(max.region).toUpperCase();
     }
-  } catch {
-    return "";
-  }
+  } catch {}
   return "";
 }
 
 function getRegionFromLanguage() {
-  const parts = browserLang.split("-");
-  return parts.length >= 2 ? parts[1].toUpperCase() : "";
+  // navigator.language ex: "pt-BR" -> "BR"
+  const lang = navigator.language || "";
+  const parts = lang.split("-");
+  if (parts.length >= 2) return parts[1].toUpperCase();
+  return "";
 }
 
 function getRegionFromTimeZoneHeuristic() {
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-  if (timezone.includes("Sao_Paulo") || timezone.includes("Araguaina")) return "BR";
-  if (timezone.includes("London")) return "GB";
-  if (timezone.includes("Dublin")) return "IE";
-  if (timezone.includes("New_York") || timezone.includes("Los_Angeles")) return "US";
-  if (timezone.includes("Tokyo")) return "JP";
-  if (timezone.includes("Sydney")) return "AU";
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+  if (tz.includes("Sao_Paulo")) return "BR";
+  if (tz.includes("London")) return "GB";
+  if (tz.includes("Dublin")) return "IE";
+  if (tz.includes("New_York") || tz.includes("Los_Angeles")) return "US";
+  if (tz.includes("Tokyo")) return "JP";
+  if (tz.includes("Sydney")) return "AU";
   return "";
 }
 
 function guessLocalCurrency() {
-  const region = getRegionFromIntlLocale() || getRegionFromLanguage() || getRegionFromTimeZoneHeuristic();
+  const region =
+    getRegionFromIntlLocale() ||
+    getRegionFromLanguage() ||
+    getRegionFromTimeZoneHeuristic();
+
   return REGION_TO_CURRENCY[region] || "USD";
 }
 
-async function getLatestRatesUSD() {
-  if (DEMO_MODE) {
-    return {
-      data: {
-        timestamp: Math.floor(Date.now() / 1000),
-        rates: DEMO_RATES
-      },
-      mode: "demo"
-    };
+// =====================================================
+// OpenExchangeRates (com cache)
+// =====================================================
+async function getOERLatestUSD() {
+  if (!OER_APP_ID || OER_APP_ID.includes("COLE_SEU_APP_ID")) {
+    throw new Error("Missing OpenExchangeRates APP_ID");
   }
 
-  return fetchWithCache("oer_latest_usd", CONFIG.OER_TTL, async () => {
-    const url = `https://openexchangerates.org/api/latest.json?app_id=${encodeURIComponent(CONFIG.OER_APP_ID)}`;
-    const response = await fetch(url);
-    const json = await response.json();
+  return fetchWithCache("oer_latest_usd", OER_TTL, async () => {
+    const url = `https://openexchangerates.org/api/latest.json?app_id=${encodeURIComponent(OER_APP_ID)}`;
+    const res = await fetch(url);
 
-    if (!response.ok || json?.error || !json?.rates) {
-      throw new Error(json?.description || "OpenExchangeRates request failed");
+    const json = await res.json();
+
+    if (!res.ok || json?.error || !json?.rates) {
+      throw new Error(json?.description || "OER request failed");
     }
 
     return json;
   });
 }
-
 function convertViaUSDRates(amount, from, to, rates) {
   const usdToFrom = from === "USD" ? 1 : Number(rates[from]);
   const usdToTo = to === "USD" ? 1 : Number(rates[to]);
@@ -299,28 +269,32 @@ function convertViaUSDRates(amount, from, to, rates) {
   return amountInUSD * usdToTo;
 }
 
-async function getPTAXSell(currencyISO) {
-  const key = `ptax_sell_${currencyISO}`;
+// =====================================================
+// PTAX Venda (com cache) quando envolve BRL
+// =====================================================
 
-  return fetchWithCache(key, CONFIG.PTAX_TTL, async () => {
+async function getPTAXVenda(moedaISO) {
+  const key = `ptax_venda_${moedaISO}`;
+
+  return fetchWithCache(key, PTAX_TTL, async () => {
     const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, "0");
-    const day = String(now.getDate()).padStart(2, "0");
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
 
-    const startDate = `01-${month}-${year}`;
-    const endDate = `${month}-${day}-${year}`;
+    const dataInicial = `01-${mm}-${yyyy}`;
+    const dataFinal = `${mm}-${dd}-${yyyy}`;
 
     const url =
       `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/` +
       `CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinal)?` +
-      `@moeda='${currencyISO}'&@dataInicial='${startDate}'&@dataFinal='${endDate}'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json`;
+      `@moeda='${moedaISO}'&@dataInicial='${dataInicial}'&@dataFinal='${dataFinal}'&$top=1&$orderby=dataHoraCotacao%20desc&$format=json`;
 
-    const response = await fetch(url);
-    const json = await response.json();
+    const res = await fetch(url);
+    const json = await res.json();
 
-    if (!response.ok || !json?.value?.length) {
-      throw new Error(`PTAX request failed for ${currencyISO}`);
+    if (!res.ok || !json?.value?.length) {
+      throw new Error(`PTAX request failed for ${moedaISO}`);
     }
 
     return {
@@ -330,17 +304,22 @@ async function getPTAXSell(currencyISO) {
   });
 }
 
-function buildCurrencyListSorted(ratesObject) {
+// =====================================================
+// Lista de moedas (ordenada por nome + topo fixo)
+// =====================================================
+function buildCurrencyListSorted(ratesObj) {
   const preferredTop = ["BRL", "GBP", "EUR", "USD"];
-  const allCodes = Object.keys(ratesObject);
-  const set = new Set(allCodes);
-  const top = preferredTop.filter((code) => set.has(code));
-  const rest = allCodes.filter((code) => !preferredTop.includes(code));
 
-  rest.sort((codeA, codeB) => {
-    const nameA = currencyNames.of(codeA) || codeA;
-    const nameB = currencyNames.of(codeB) || codeB;
-    return nameA.localeCompare(nameB, browserLang, { sensitivity: "base" });
+  const allCodes = Object.keys(ratesObj);
+  const set = new Set(allCodes);
+
+  const top = preferredTop.filter(c => set.has(c));
+  const rest = allCodes.filter(c => !preferredTop.includes(c));
+
+  rest.sort((a, b) => {
+    const na = currencyNames.of(a) || a;
+    const nb = currencyNames.of(b) || b;
+    return na.localeCompare(nb, navigator.language || "en", { sensitivity: "base" });
   });
 
   return [...top, ...rest];
@@ -352,23 +331,28 @@ function populateSelects(codes) {
 
   for (const code of codes) {
     const name = currencyNames.of(code) || code;
-    const label = `${name} — ${code}`;
+    const text = `${name} — ${code}`;
 
-    const optionFrom = document.createElement("option");
-    optionFrom.value = code;
-    optionFrom.textContent = label;
-    selectFrom.appendChild(optionFrom);
+    const opt1 = document.createElement("option");
+    opt1.value = code;
+    opt1.textContent = text;
+    selectFrom.appendChild(opt1);
 
-    const optionTo = optionFrom.cloneNode(true);
-    selectTo.appendChild(optionTo);
+    const opt2 = opt1.cloneNode(true);
+    selectTo.appendChild(opt2);
   }
 }
 
+// =====================================================
+// UI update
+// =====================================================
 function updateTexts() {
   const from = selectFrom.value;
   const to = selectTo.value;
+
   fromCode.textContent = from;
   fromName.textContent = currencyNames.of(from) || from;
+
   toCode.textContent = to;
   toName.textContent = currencyNames.of(to) || to;
 }
@@ -378,84 +362,92 @@ function updateUI() {
   updateFlags();
 }
 
+// =====================================================
+// Conversão (online/offline)
+// =====================================================
+
 async function convertSmart(amount, from, to) {
   if (from === to) {
-    return { converted: amount, meta: { source: "identity", mode: "", date: "" } };
-  }
-
-  const ratesResponse = await getLatestRatesUSD();
-  const latestRates = ratesResponse.data;
-  const latestMode = ratesResponse.mode;
-  const latestDate = new Date(latestRates.timestamp * 1000).toISOString();
-
-  if (DEMO_MODE) {
     return {
-      converted: convertViaUSDRates(amount, from, to, latestRates.rates),
-      meta: { source: "demo", mode: latestMode, date: latestDate }
+      converted: amount,
+      meta: { source: "identity", mode: "", date: "" }
     };
   }
+
+  const oerResp = await getOERLatestUSD();
+  const oer = oerResp.data;
+  const oerMode = oerResp.mode;
+  const oerDate = new Date(oer.timestamp * 1000).toISOString();
 
   if (from === "BRL" || to === "BRL") {
     try {
       if (to === "BRL") {
-        const ptResponse = await getPTAXSell(from);
-        const ptax = ptResponse.data;
+        const ptResp = await getPTAXVenda(from);
+        const ptax = ptResp.data;
+
         return {
           converted: amount * ptax.cotacaoVenda,
-          meta: { source: "ptax", mode: ptResponse.mode, date: ptax.dataHoraCotacao }
+          meta: {
+            source: "ptax",
+            mode: ptResp.mode,
+            date: ptax.dataHoraCotacao
+          }
         };
       }
 
       if (from === "BRL") {
-        const ptResponse = await getPTAXSell(to);
-        const ptax = ptResponse.data;
+        const ptResp = await getPTAXVenda(to);
+        const ptax = ptResp.data;
+
         return {
           converted: amount / ptax.cotacaoVenda,
-          meta: { source: "ptax", mode: ptResponse.mode, date: ptax.dataHoraCotacao }
+          meta: {
+            source: "ptax",
+            mode: ptResp.mode,
+            date: ptax.dataHoraCotacao
+          }
         };
       }
-    } catch {
+    } catch (error) {
+      const converted = convertViaUSDRates(amount, from, to, oer.rates);
       return {
-        converted: convertViaUSDRates(amount, from, to, latestRates.rates),
-        meta: { source: "oer", mode: `fallback-${latestMode}`, date: latestDate }
+        converted,
+        meta: {
+          source: "oer",
+          mode: `fallback-${oerMode}`,
+          date: oerDate
+        }
       };
     }
   }
 
+  const converted = convertViaUSDRates(amount, from, to, oer.rates);
+
   return {
-    converted: convertViaUSDRates(amount, from, to, latestRates.rates),
-    meta: { source: "oer", mode: latestMode, date: latestDate }
+    converted,
+    meta: {
+      source: "oer",
+      mode: oerMode,
+      date: oerDate
+    }
   };
 }
 
+// debounce
 let debounceTimer = null;
-
 function scheduleConvert() {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    convert();
-  }, 250);
-}
-
-function resetResult() {
-  fromValue.textContent = "—";
-  toValue.textContent = "—";
-  rateInfo.textContent = "";
+  debounceTimer = setTimeout(() => convert(), 250);
 }
 
 async function convert() {
   const amount = parseAmount(inputAmount.value);
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    inputAmount.classList.add("is-invalid");
-    resetResult();
-    setStatus(t("enter_amount"), "warning");
+    fromValue.textContent = "—";
+    toValue.textContent = "—";
+    rateInfo.textContent = "";
     return;
-  }
-
-  inputAmount.classList.remove("is-invalid");
-  if (!DEMO_MODE) {
-    clearStatus();
   }
 
   const from = selectFrom.value;
@@ -468,93 +460,72 @@ async function convert() {
     toValue.textContent = formatNumber(converted);
 
     if (meta.source === "identity") {
-      rateInfo.textContent = t("same_currency");
+      rateInfo.textContent = m("same_currency");
     } else if (meta.source === "ptax") {
-      rateInfo.textContent = t("source_ptax", meta.mode, meta.date || "");
-    } else if (meta.source === "demo") {
-      rateInfo.textContent = t("source_demo");
+      rateInfo.textContent = m("source_ptax", meta.mode, meta.date || "");
     } else {
-      rateInfo.textContent = t("source_oer", meta.mode, meta.date || "");
-    }
-
-    if (meta.mode === "stale-cache" || String(meta.mode).includes("fallback")) {
-      setStatus(t("fallback_cache"), "warning");
-    } else if (DEMO_MODE) {
-      setStatus(t("demo_mode"), "info");
+      rateInfo.textContent = m("source_oer", meta.mode, meta.date || "");
     }
   } catch (error) {
     console.error("CONVERT ERROR:", error);
     fromValue.textContent = formatNumber(amount);
     toValue.textContent = "—";
-    rateInfo.textContent = "";
-    setStatus(t("offline_no_cache"), "error");
+    rateInfo.textContent = m("offline_no_cache");
   }
 }
 
+// swap
 function swapCurrencies() {
-  const from = selectFrom.value;
-  const to = selectTo.value;
-  selectFrom.value = to;
-  selectTo.value = from;
+  const a = selectFrom.value;
+  const b = selectTo.value;
+  selectFrom.value = b;
+  selectTo.value = a;
+
   updateUI();
   convert();
 }
 
-async function copyConvertedValue() {
-  const value = toValue.textContent?.trim();
-  if (!value || value === "—") {
-    setStatus(t("copy_empty"), "warning");
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(value);
-    setStatus(t("copy_success"), "info");
-  } catch (error) {
-    console.error("COPY ERROR:", error);
-    setStatus(t("copy_empty"), "warning");
-  }
-}
-
+// =====================================================
+// INIT
+// =====================================================
 async function init() {
-  const mapResponse = await fetch(CONFIG.MAP_CURRENCY_TO_CCA2_URL);
-  if (!mapResponse.ok) {
-    throw new Error("Could not load currency-to-country map");
-  }
-  currencyToCountry = await mapResponse.json();
+  // 0) carregar map de flags (local)
+  const mapRes = await fetch(MAP_CURRENCY_TO_CCA2_URL);
+  if (!mapRes.ok) throw new Error("Could not load assets/currency-to-country.json");
+  CURRENCY_TO_CCA2 = await mapRes.json();
 
-  const ratesResponse = await getLatestRatesUSD();
-  const latestRates = ratesResponse.data;
-  const codes = buildCurrencyListSorted(latestRates.rates);
+  // 1) carregar OER (com cache)
+  const oerResp = await getOERLatestUSD();
+  const oer = oerResp.data;
+
+  // 2) montar lista
+  const codes = buildCurrencyListSorted(oer.rates);
   populateSelects(codes);
 
-  const localCurrency = guessLocalCurrency();
-  selectFrom.value = codes.includes(localCurrency) ? localCurrency : (codes.includes("BRL") ? "BRL" : "USD");
+  // 3) default moeda local (1)
+  const local = guessLocalCurrency();
+  selectFrom.value = codes.includes(local) ? local : (codes.includes("BRL") ? "BRL" : "USD");
   selectTo.value = codes.includes("USD") ? "USD" : codes[0];
 
+  // 4) default amount
   inputAmount.value = "100";
+
+  // 5) UI inicial
   updateUI();
-  await convert();
 
-  selectFrom.addEventListener("change", () => {
-    updateUI();
-    scheduleConvert();
-  });
+  // 6) converter inicial (2/3)
+  convert();
 
-  selectTo.addEventListener("change", () => {
-    updateUI();
-    scheduleConvert();
-  });
-
+  // 7) eventos
+  selectFrom.addEventListener("change", () => { updateUI(); scheduleConvert(); });
+  selectTo.addEventListener("change", () => { updateUI(); scheduleConvert(); });
   inputAmount.addEventListener("input", scheduleConvert);
   swapButton.addEventListener("click", swapCurrencies);
-  copyResultButton.addEventListener("click", copyConvertedValue);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  init().catch((error) => {
-    console.error("INIT ERROR:", error);
-    resetResult();
-    setStatus(t("init_error"), "error");
+  init().catch(err => {
+    console.error("INIT ERROR:", err);
+    alert("Erro ao iniciar. Verifique APP_ID / internet e se assets/currency-to-country.json existe.");
   });
 });
