@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="description" content="Currency Converter web app built with HTML, CSS and JavaScript, featuring caching, offline fallback and internationalization." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="./style.css" />
+  <script src="./config.js"></script>
+  <script src="./scripts.js" defer></script>
+
+  <title>Currency Converter</title>
+</head>
+<body>
+  <div class="page">
+    <div class="app">
+      <img class="logo" src="./assets/logo.gif" alt="Currency Converter logo" />
+
+      <main class="card" aria-labelledby="app-title">
+        <h1 id="app-title" class="sr-only">Currency Converter</h1>
+
+        <div class="field">
+          <label class="field-label" for="currency-from">Convert from</label>
+          <select
+            id="currency-from"
+            class="currency-select-from"
+            aria-describedby="status-message"
+            title="Choose the source currency"
+          ></select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="currency-to">Convert to</label>
+          <select
+            id="currency-to"
+            class="currency-select-to"
+            aria-describedby="status-message"
+            title="Choose the target currency"
+          ></select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="amount">Amount</label>
+          <input
+            id="amount"
+            class="input-amount"
+            type="text"
+            inputmode="decimal"
+            placeholder="Enter an amount"
+            autocomplete="off"
+            aria-describedby="amount-help status-message"
+            title="Enter the amount you want to convert"
+          />
+          <p id="amount-help" class="field-help">Enter a positive amount. Both comma and dot are supported.</p>
+        </div>
+
+        <button
+          type="button"
+          class="swap-button"
+          aria-label="Swap source and target currencies"
+          title="Swap source and target currencies"
+        >⇄ Swap currencies</button>
+
+        <p class="status-message" id="status-message" aria-live="polite"></p>
+        <p class="rate-info" aria-live="polite" title="Shows the exchange-rate source and cache status"></p>
+
+        <section class="result-card" aria-labelledby="result-title">
+          <h2 id="result-title" class="sr-only">Conversion result</h2>
+
+          <div class="result-block">
+            <div class="badge">
+              <img id="fromFlag" class="flag" alt="Source currency flag" />
+              <div class="badge-code" id="fromCode">BRL</div>
+            </div>
+            <p class="result-name" id="fromName">—</p>
+            <p class="result-value" id="fromValue">—</p>
+          </div>
+
+          <img class="result-arrow" src="./assets/Vector.png" alt="Conversion direction" />
+
+          <div class="result-block">
+            <div class="badge">
+              <img id="toFlag" class="flag" alt="Target currency flag" />
+              <div class="badge-code" id="toCode">USD</div>
+            </div>
+            <p class="result-name" id="toName">—</p>
+            <div class="result-output-row">
+              <p class="result-value" id="toValue">—</p>
+              <button
+                type="button"
+                class="copy-button"
+                id="copyResultButton"
+                aria-label="Copy converted value"
+                title="Copy converted value"
+              >Copy</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="app-footer">
+    <p>Built by <strong>Anderson Marcondes Santana</strong></p>
+    <div class="footer-links">
+      <a href="https://github.com/rpollaco-hit" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <span>•</span>
+      <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="80" height="50" viewBox="0 0 80 50">
+  
+  <!-- fundo -->
+  <rect width="80" height="50" rx="6" fill="#E5E7EB"/>
+
+  <!-- linhas -->
+  <line x1="0" y1="0" x2="80" y2="50" stroke="#9CA3AF" stroke-width="2"/>
+  <line x1="80" y1="0" x2="0" y2="50" stroke="#9CA3AF" stroke-width="2"/>
+
+  <!-- texto -->
+  <text x="40" y="28"
+        font-family="Arial, Helvetica, sans-serif"
+        font-size="10"
+        fill="#6B7280"
+        text-anchor="middle">
+        FLAG
+  </text>
+
+</svg>
