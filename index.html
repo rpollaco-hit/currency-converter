@@ -3,53 +3,53 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-UA-Compatible" content="IE-edge" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Currency Converter</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&display=swap" rel="stylesheet">
-  <script src="./config.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="./style.css" />
+  <script>window.APP_CONFIG = window.APP_CONFIG || {};</script>
+  <script src="./config.js"></script>
   <script src="./scripts.js" defer></script>
-
-  <title>DevClub - Convert Money</title>
 </head>
-
 <body>
   <div class="page">
     <div class="app">
-
-      <img class="logo" src="./assets/logo.gif" alt="logo" />
+      <img class="logo" src="./assets/Logo.png" alt="Currency Converter logo" />
 
       <main class="card">
-        <label class="field">
-          <span class="field-label" data-i18n="convert_from">Converter de</span>
-          <select class="currency-select-from"></select>
+        <label class="field" for="currency-from">
+          <span class="field-label">Convert from</span>
+          <select id="currency-from" class="currency-select-from" aria-label="Convert from"></select>
         </label>
 
-        <label class="field">
-          <span class="field-label" data-i18n="convert_to">Converter para</span>
-          <select class="currency-select-to"></select>
+        <label class="field" for="currency-to">
+          <span class="field-label">Convert to</span>
+          <select id="currency-to" class="currency-select-to" aria-label="Convert to"></select>
         </label>
 
-        <label class="field">
-          <span class="field-label" data-i18n="amount">Valor</span>
-          <input class="input-amount" type="text" placeholder="100" />
+        <label class="field" for="amount-input">
+          <span class="field-label">Amount</span>
+          <input id="amount-input" class="input-amount" type="text" placeholder="100" inputmode="decimal" aria-label="Amount" />
         </label>
 
-        <button type="button" class="swap-button" data-i18n="swap">⇄ Swap</button>
+        <button type="button" class="swap-button" aria-label="Swap currencies">⇄ Swap</button>
 
-        <p class="rate-info"></p>
+        <p class="rate-info" aria-live="polite"></p>
+        <p class="status-message" aria-live="polite"></p>
 
-        <section class="result-card">
+        <section class="result-card" aria-label="Conversion result">
           <div class="result-row">
             <div class="result-meta">
               <div class="badge">
-                <img id="fromFlag" class="flag" alt="From flag" />
+                <img id="fromFlag" class="flag" alt="From currency flag" />
               </div>
               <div class="result-texts">
                 <div class="badge-code" id="fromCode">BRL</div>
-                <p class="result-name" id="fromName">—</p>
+                <p class="result-name" id="fromName">Brazilian Real</p>
               </div>
             </div>
             <div class="result-amount-box">
@@ -58,39 +58,38 @@
           </div>
 
           <div class="result-divider">
-            <img class="result-arrow" src="./assets/Vector.png" alt="direction" />
+            <img class="result-arrow" src="./assets/Vector.png" alt="Conversion direction" />
           </div>
 
           <div class="result-row">
             <div class="result-meta">
               <div class="badge">
-                <img id="toFlag" class="flag" alt="To Flag" />
+                <img id="toFlag" class="flag" alt="To currency flag" />
               </div>
               <div class="result-texts">
                 <div class="badge-code" id="toCode">USD</div>
-                <p class="result-name" id="toName">—</p>
+                <p class="result-name" id="toName">US Dollar</p>
               </div>
             </div>
-            <div class="result-amount-box result-amount-box--highlight">
-              <p class="result-value" id="toValue">—</p>
+            <div class="result-amount-actions">
+              <div class="result-amount-box result-amount-box--highlight">
+                <p class="result-value" id="toValue">—</p>
+              </div>
+              <button type="button" class="copy-button" id="copyButton" aria-label="Copy converted value">Copy</button>
             </div>
           </div>
         </section>
       </main>
 
+      <footer class="app-footer">
+        <p>Built by <strong>Anderson Marcondes Santana</strong></p>
+        <div class="footer-links">
+          <a href="https://github.com/rpollaco-hit" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <span>•</span>
+          <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        </div>
+      </footer>
     </div>
   </div>
- <footer class="app-footer">
-    <p>
-      Built by 
-      <strong>Anderson Marcondes Santana</strong>
-    </p>
-
-    <div class="footer-links">
-      <a href="https://github.com/rpollaco-hit" target="_blank">GitHub</a>
-      <span>•</span>
-      <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank">LinkedIn</a>
-    </div>
-  </footer>
 </body>
 </html>

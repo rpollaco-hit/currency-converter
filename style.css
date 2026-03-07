@@ -5,16 +5,18 @@
   font-family: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
 }
 
+body {
+  background: #7C3AED;
+}
+
 .page {
   min-height: 100vh;
-  background: #7C3AED;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 18px;
 }
 
 .app {
-  height: 100%;
   width: 100%;
   max-width: 420px;
   display: grid;
@@ -23,27 +25,29 @@
 }
 
 .logo {
-  width: 300px;
-  height: 300px;
+  width: 170px;
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .card {
   width: 100%;
   background: #F4F4F4;
   border-radius: 18px;
-  padding: 16px;
+  padding: 14px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.20);
 }
 
 .field {
   display: grid;
   gap: 6px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .field-label {
-  font-size: 16px;
-  color: #000000;
+  font-size: 15px;
+  color: #111827;
   font-weight: 700;
   text-align: center;
 }
@@ -57,7 +61,7 @@ select,
   padding: 8px 10px;
   background: #FFFFFF;
   outline: none;
-  font-size: 16px;
+  font-size: 15px;
   text-align: center;
 }
 
@@ -66,36 +70,50 @@ select:focus,
   border-color: #7C3AED;
 }
 
+.swap-button,
+.copy-button {
+  border: 0;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
 .swap-button {
   width: 100%;
   height: 40px;
-  border: 0;
-  border-radius: 10px;
   background: #5B21B6;
   color: #FFFFFF;
-  font-weight: 900;
-  font-size: 16px;
-  cursor: pointer;
+  font-size: 15px;
 }
 
-.swap-button:hover {
+.swap-button:hover,
+.copy-button:hover {
   opacity: 0.96;
 }
 
-.rate-info {
-  margin: 10px 0 0;
-  min-height: 16px;
-  font-size: 13px;
-  color: #000000;
+.rate-info,
+.status-message {
+  min-height: 18px;
+  font-size: 12px;
   text-align: center;
 }
 
+.rate-info {
+  margin-top: 8px;
+  color: #111827;
+}
+
+.status-message {
+  color: #5B21B6;
+  margin-top: 2px;
+}
+
 .result-card {
-  margin-top: 12px;
+  margin-top: 10px;
   border-radius: 14px;
   border: 1px solid #7C3AED;
   background: #FFFFFF;
-  padding: 14px;
+  padding: 12px;
   display: grid;
   gap: 10px;
 }
@@ -115,10 +133,10 @@ select:focus,
 }
 
 .badge {
-  width: 54px;
-  height: 54px;
+  width: 48px;
+  height: 48px;
   border-radius: 14px;
-  background: #e2e1e1;
+  background: #E5E7EB;
   display: grid;
   place-items: center;
   padding: 6px;
@@ -126,42 +144,46 @@ select:focus,
 }
 
 .flag {
-  width: 34px;
-  height: 22px;
+  width: 30px;
+  height: 20px;
   border-radius: 6px;
   object-fit: cover;
-  background: rgba(255, 255, 255, 0.10);
+  background: #fff;
 }
 
 .result-texts {
   min-width: 0;
   display: grid;
-  gap: 3px;
-  text-align: left;
+  gap: 2px;
 }
 
 .badge-code {
   font-size: 15px;
   font-weight: 800;
-  color: #388ffa;
+  color: #388FFA;
   line-height: 1.1;
 }
 
 .result-name {
-  color: #0c0c0c;
-  font-weight: 800;
-  font-size: 15px;
+  color: #111827;
+  font-weight: 700;
+  font-size: 14px;
   line-height: 1.2;
   word-break: break-word;
 }
 
+.result-amount-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
 .result-amount-box {
-  min-width: 138px;
-  max-width: 180px;
+  min-width: 108px;
   border: 1px solid #D8B4FE;
   border-radius: 12px;
   background: #FAF5FF;
-  padding: 12px 14px;
+  padding: 10px 12px;
   text-align: right;
 }
 
@@ -172,31 +194,39 @@ select:focus,
 }
 
 .result-value {
-  font-size: 24px;
+  font-size: 22px;
   color: #0F172A;
   font-weight: 900;
   line-height: 1.1;
   word-break: break-word;
 }
 
+.copy-button {
+  min-width: 88px;
+  height: 34px;
+  background: #EDE9FE;
+  color: #5B21B6;
+  font-size: 13px;
+  padding: 0 12px;
+}
+
 .result-divider {
   display: grid;
   place-items: center;
-  padding: 2px 0;
+  padding: 0;
 }
 
 .result-arrow {
-  width: 28px;
+  width: 24px;
   height: auto;
-  opacity: 0.9;
+  opacity: 0.92;
 }
 
 .app-footer {
-  margin-top: 14px;
   text-align: center;
   color: #FFFFFF;
   font-size: 12px;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .app-footer strong {
@@ -218,17 +248,29 @@ select:focus,
 }
 
 @media (max-width: 420px) {
+  .page {
+    padding: 12px;
+  }
+
+  .logo {
+    width: 140px;
+  }
+
   .card {
-    padding: 14px;
+    padding: 12px;
   }
 
   .result-row {
     grid-template-columns: 1fr;
-    gap: 10px;
+    gap: 8px;
   }
 
-  .result-amount-box {
-    max-width: none;
+  .result-amount-actions {
+    justify-items: stretch;
+  }
+
+  .result-amount-box,
+  .copy-button {
     width: 100%;
   }
 }
