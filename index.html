@@ -12,8 +12,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./style.css" />
-  <script>window.APP_CONFIG = window.APP_CONFIG || {};</script>
-  <script src="./config.js"></script>
+  <script>
+    window.APP_CONFIG = window.APP_CONFIG || {};
+  </script>
+  <script>
+    const configScript = document.createElement("script");
+    configScript.src = "./config.js";
+    configScript.onerror = () => console.info("config.js not found: running in Demo Mode.");
+    document.head.appendChild(configScript);
+  </script>
   <script src="./scripts.js" defer></script>
   <!-- Add inside <head> -->
   <link rel="manifest" href="./manifest.json">

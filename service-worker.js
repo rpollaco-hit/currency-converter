@@ -5,7 +5,7 @@ const APP_SHELL = [
   "./style.css",
   "./scripts.js",
   "./manifest.json",
-  "./assets/Logo.png",
+  "./assets/exchange_currency.png",
   "./assets/Vector.png",
   "./assets/flag-placeholder.svg",
   "./assets/currency-to-country.json",
