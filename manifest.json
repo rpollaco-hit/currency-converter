@@ -1,7 +1,8 @@
 {
+  "id": "./",
   "name": "Currency Converter",
   "short_name": "Converter",
-  "description": "Currency Converter with Demo Mode, live API support, flags, and responsive UI.",
+  "description": "Currency Converter with Demo Mode, live API support, installable PWA experience, flags, copy result button and responsive interface.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

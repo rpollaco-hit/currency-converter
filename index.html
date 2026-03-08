@@ -1,17 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <title>Currency Converter</title>
+  <title>Currency Converter | Installable PWA</title>
+
+  <meta name="description" content="Currency Converter built with HTML, CSS and JavaScript. Includes Demo Mode, live API support, installable PWA experience, flags, copy result button and responsive design." />
+  <meta name="keywords" content="currency converter, javascript project, pwa, exchange rates, html css javascript, demo mode, portfolio project" />
+  <meta name="author" content="Anderson Marcondes Santana" />
+  <meta name="robots" content="index,follow" />
+  <meta name="theme-color" content="#7C3AED" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Converter" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./assets/icon-192-coins-real.png">
   <link rel="stylesheet" href="./style.css" />
+
   <script>
     window.APP_CONFIG = window.APP_CONFIG || {};
   </script>
@@ -22,17 +32,21 @@
     document.head.appendChild(configScript);
   </script>
   <script src="./scripts.js" defer></script>
-  <!-- Add inside <head> -->
-  <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#7C3AED">
-  <link rel="apple-touch-icon" href="./assets/icon-192-coins-real.png">
-
 </head>
 
 <body>
+  <div class="app-loading" id="appLoading" aria-live="polite">
+    <div class="app-loading__card">
+      <img class="app-loading__icon" src="./assets/icon-192-coins-real.png" alt="Currency Converter app icon" />
+      <div class="app-loading__spinner" aria-hidden="true"></div>
+      <p class="app-loading__title">Currency Converter</p>
+      <p class="app-loading__text">Loading exchange tools...</p>
+    </div>
+  </div>
+
   <div class="page">
     <div class="app">
-      <img class="logo" src="./assets/exchange_currency.png" alt="Currency Converter logo" />
+      <img class="logo" src="./assets/exchange_currency.png" alt="Realistic exchange of Brazilian Real and US Dollar" />
 
       <main class="card">
         <label class="field" for="currency-from">
@@ -47,11 +61,14 @@
 
         <label class="field" for="amount-input">
           <span class="field-label">Amount</span>
-          <input id="amount-input" class="input-amount" type="text" placeholder="100" inputmode="decimal"
-            aria-label="Amount" />
+          <input id="amount-input" class="input-amount" type="text" placeholder="100" inputmode="decimal" aria-label="Amount" />
         </label>
 
         <button type="button" class="swap-button" aria-label="Swap currencies">⇄ Swap</button>
+
+        <div class="app-actions">
+          <button type="button" class="install-button is-hidden" id="installButton" aria-label="Install app">Install App</button>
+        </div>
 
         <p class="rate-info" aria-live="polite"></p>
         <p class="status-message" aria-live="polite"></p>
@@ -101,12 +118,12 @@
         <div class="footer-links">
           <a href="https://github.com/rpollaco-hit" target="_blank" rel="noopener noreferrer">GitHub</a>
           <span>•</span>
-          <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank"
-            rel="noopener noreferrer">LinkedIn</a>
+          <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
         </div>
       </footer>
     </div>
   </div>
+
   <script>
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
@@ -115,5 +132,4 @@
     }
   </script>
 </body>
-
 </html>

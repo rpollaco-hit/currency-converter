@@ -5,8 +5,20 @@
   font-family: "Roboto", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
 }
 
+:root {
+  --bg: #7C3AED;
+  --bg-dark: #5B21B6;
+  --card: #F4F4F4;
+  --text: #111827;
+  --muted: #6B7280;
+  --white: #FFFFFF;
+  --soft-purple: #F3E8FF;
+  --soft-purple-2: #EDE9FE;
+  --border: #D1D5DB;
+}
+
 body {
-  background: #7C3AED;
+  background: var(--bg);
 }
 
 .page {
@@ -33,7 +45,7 @@ body {
 
 .card {
   width: 100%;
-  background: #F4F4F4;
+  background: var(--card);
   border-radius: 18px;
   padding: 14px;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.20);
@@ -47,7 +59,7 @@ body {
 
 .field-label {
   font-size: 15px;
-  color: #111827;
+  color: var(--text);
   font-weight: 700;
   text-align: center;
 }
@@ -57,9 +69,9 @@ select,
   height: 40px;
   width: 100%;
   border-radius: 10px;
-  border: 1px solid #D1D5DB;
+  border: 1px solid var(--border);
   padding: 8px 10px;
-  background: #FFFFFF;
+  background: var(--white);
   outline: none;
   font-size: 15px;
   text-align: center;
@@ -67,11 +79,12 @@ select,
 
 select:focus,
 .input-amount:focus {
-  border-color: #7C3AED;
+  border-color: var(--bg);
 }
 
 .swap-button,
-.copy-button {
+.copy-button,
+.install-button {
   border: 0;
   border-radius: 10px;
   cursor: pointer;
@@ -81,13 +94,32 @@ select:focus,
 .swap-button {
   width: 100%;
   height: 40px;
-  background: #5B21B6;
-  color: #FFFFFF;
+  background: var(--bg-dark);
+  color: var(--white);
   font-size: 15px;
 }
 
+.app-actions {
+  display: grid;
+  margin-top: 10px;
+}
+
+.install-button {
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(135deg, #A78BFA, #7C3AED);
+  color: var(--white);
+  font-size: 14px;
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.22);
+}
+
+.install-button.is-hidden {
+  display: none;
+}
+
 .swap-button:hover,
-.copy-button:hover {
+.copy-button:hover,
+.install-button:hover {
   opacity: 0.96;
 }
 
@@ -100,19 +132,19 @@ select:focus,
 
 .rate-info {
   margin-top: 8px;
-  color: #111827;
+  color: var(--text);
 }
 
 .status-message {
-  color: #5B21B6;
+  color: var(--bg-dark);
   margin-top: 2px;
 }
 
 .result-card {
   margin-top: 10px;
   border-radius: 14px;
-  border: 1px solid #7C3AED;
-  background: #FFFFFF;
+  border: 1px solid var(--bg);
+  background: var(--white);
   padding: 12px;
   display: grid;
   gap: 10px;
@@ -165,7 +197,7 @@ select:focus,
 }
 
 .result-name {
-  color: #111827;
+  color: var(--text);
   font-weight: 700;
   font-size: 14px;
   line-height: 1.2;
@@ -188,8 +220,8 @@ select:focus,
 }
 
 .result-amount-box--highlight {
-  border-color: #7C3AED;
-  background: #F3E8FF;
+  border-color: var(--bg);
+  background: var(--soft-purple);
   box-shadow: 0 6px 16px rgba(124, 58, 237, 0.12);
 }
 
@@ -204,8 +236,8 @@ select:focus,
 .copy-button {
   min-width: 88px;
   height: 34px;
-  background: #EDE9FE;
-  color: #7C3AED;
+  background: var(--soft-purple-2);
+  color: var(--bg);
   font-size: 13px;
   padding: 0 12px;
 }
@@ -224,7 +256,7 @@ select:focus,
 
 .app-footer {
   text-align: center;
-  color: #FFFFFF;
+  color: var(--white);
   font-size: 12px;
   opacity: 0.95;
 }
@@ -238,7 +270,7 @@ select:focus,
 }
 
 .footer-links a {
-  color: #FFFFFF;
+  color: var(--white);
   text-decoration: none;
   font-weight: 600;
 }
@@ -247,13 +279,77 @@ select:focus,
   text-decoration: underline;
 }
 
+/* Loading screen */
+.app-loading {
+  position: fixed;
+  inset: 0;
+  background: rgba(124, 58, 237, 0.96);
+  display: grid;
+  place-items: center;
+  z-index: 9999;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+.app-loading.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.app-loading__card {
+  width: min(320px, 86vw);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  border-radius: 22px;
+  padding: 24px 20px;
+  text-align: center;
+  color: var(--white);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.22);
+}
+
+.app-loading__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
+  padding: 6px;
+  display: block;
+  margin: 0 auto 14px;
+}
+
+.app-loading__spinner {
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.28);
+  border-top-color: var(--white);
+  animation: spin 0.9s linear infinite;
+}
+
+.app-loading__title {
+  font-size: 18px;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.app-loading__text {
+  font-size: 13px;
+  opacity: 0.92;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 420px) {
   .page {
     padding: 12px;
   }
 
   .logo {
-    width: 140px;
+    width: min(260px, 84vw);
   }
 
   .card {
