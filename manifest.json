@@ -1,0 +1,25 @@
+{
+  "name": "Currency Converter",
+  "short_name": "Converter",
+  "description": "Currency Converter with Demo Mode, live API support, flags, and responsive UI.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#7C3AED",
+  "theme_color": "#7C3AED",
+  "icons": [
+    {
+      "src": "./assets/icon-192-realcoins.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./assets/icon-512-realcoins.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
