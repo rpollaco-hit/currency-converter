@@ -9,8 +9,8 @@ const APP_SHELL = [
   "./assets/Vector.png",
   "./assets/flag-placeholder.svg",
   "./assets/currency-to-country.json",
-  "./assets/icon-192.png",
-  "./assets/icon-512.png"
+  "./assets/icon-192-coins-real.png",
+  "./assets/icon-512-coins-real.png"
 ];
 
 self.addEventListener("install", (event) => {
