@@ -1,3 +1,4 @@
+let deferredInstallPrompt = null;
 const CONFIG = {
   OER_APP_ID: "YOUR_APP_ID",
   MAP_CURRENCY_TO_CCA2_URL: "./assets/currency-to-country.json",
@@ -33,7 +34,8 @@ const inputAmount = document.querySelector(".input-amount");
 const swapButton = document.querySelector(".swap-button");
 const rateInfo = document.querySelector(".rate-info");
 const statusMessage = document.querySelector(".status-message");
-const copyResultButton = document.getElementById("copyResultButton");
+const copyButton = document.getElementById("copyButton");
+const installButton = document.getElementById("installButton");
 
 const fromCode = document.getElementById("fromCode");
 const fromName = document.getElementById("fromName");
@@ -184,21 +186,29 @@ function updateFlags() {
 }
 
 async function handleInstallClick() {
-  if (!deferredInstallPrompt) {
-    setStatus("Install prompt not available on this device.");
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const choiceResult = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    hideInstallButton();
+
+    if (choiceResult?.outcome === "accepted") {
+      setStatus("App installation started.");
+    } else {
+      setStatus("Installation dismissed.");
+    }
     return;
   }
 
-  deferredInstallPrompt.prompt();
-  const choiceResult = await deferredInstallPrompt.userChoice;
-  deferredInstallPrompt = null;
-  hideInstallButton();
+  const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+  const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
 
-  if (choiceResult?.outcome === "accepted") {
-    setStatus("App installation started.");
-  } else {
-    setStatus("Installation dismissed.");
+  if (isIOS && isSafari) {
+    setStatus('To install on iPhone/iPad: tap Share and then "Add to Home Screen".');
+    return;
   }
+
+  setStatus("Installation is not available right now. Try Chrome or Edge, or check if the app is already installed.");
 }
 
 const REGION_TO_CURRENCY = {
@@ -548,7 +558,7 @@ async function init() {
 
   inputAmount.addEventListener("input", scheduleConvert);
   swapButton.addEventListener("click", swapCurrencies);
-  copyResultButton.addEventListener("click", copyConvertedValue);
+  copyButton.addEventListener("click", copyConvertedValue);
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -558,3 +568,17 @@ document.addEventListener("DOMContentLoaded", () => {
     setStatus(t("init_error"), "error");
   });
 });
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredInstallPrompt = event;
+  const btn = document.getElementById("installButton");
+  if (btn) btn.disabled = false;
+});
+
+function hideLoadingScreen(){
+  const loading = document.getElementById("appLoading");
+  if(loading){
+    loading.classList.add("is-hidden");
+  }
+}
