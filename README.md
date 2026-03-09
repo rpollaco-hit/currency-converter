@@ -1,299 +1,315 @@
-# 🌍 Currency Converter
+# 🌍 Currency Converter PWA
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-yellow)
 ![API](https://img.shields.io/badge/API-OpenExchangeRates-green)
-![API](https://img.shields.io/badge/API-BCB%20PTAX-green)
-![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
+![PWA](https://img.shields.io/badge/PWA-installable-blue)
 ![Offline](https://img.shields.io/badge/offline-cache-blue)
-![License](https://img.shields.io/badge/license-MIT-blue)
+![Performance](https://img.shields.io/badge/performance-optimized-brightgreen)
 ![Demo Mode](https://img.shields.io/badge/demo-runs%20without%20API%20key-purple)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-A modern **Currency Converter web application** built with **HTML, CSS, and Vanilla JavaScript**.
+A lightweight **Currency Converter Progressive Web App (PWA)** built with **HTML, CSS and Vanilla JavaScript**.
 
-It converts currencies in real time using external APIs and applies **client-side caching, offline fallback, locale-aware formatting, and internationalized currency names**.
+The application converts currencies using **OpenExchangeRates**, while maintaining usability even when the network is unavailable through **local caching, offline fallback and demo mode**.
 
-When no `APP_ID` is configured, the app automatically runs in **Demo Mode** with simulated exchange rates so anyone can test the interface without extra setup.
+It was designed as a **portfolio-quality front-end project**, demonstrating modern client-side architecture principles such as:
 
-This project was designed as a lightweight, production-style front-end application focused on **performance, resilience, and usability**.
-
----
-
-## 🌐 Live Demo
-
-Coming soon via **GitHub Pages**.
-
-> The project already works without an API key thanks to **Demo Mode**.
+- API integration
+- resilient fallback strategies
+- PWA capabilities
+- localized user experience
+- lightweight performance-first design
 
 ---
 
-## 🎬 Demo
+# 🌐 Live Application
+
+**GitHub Pages**
+
+https://rpollaco-hit.github.io/currency-converter/
+
+The application works **even without an API key** thanks to the built-in **Demo Mode**.
+
+---
+
+# 🎬 Demo
 
 ![Demo](assets/currency_converter_demo.gif)
 
 ---
 
-## 🖼️ Architecture Overview
+# 🖼️ Architecture Overview
 
 ![Architecture](assets/currency_converter_architecture.png)
 
 High-level flow:
 
-User → HTML UI → `scripts.js` → APIs / Cache / Localization / Flags
+User Interface → scripts.js → Execution Mode Detection → API / Cache / Offline / Demo
 
-Main integrations:
-- **OpenExchangeRates API** for global exchange rates
-- **Brazil Central Bank PTAX API** when BRL is involved
-- **LocalStorage cache** for resilience and lower API usage
-- **FlagCDN** for currency flags
-- **Intl API** for localization and currency names
+Core components:
 
----
-
-## ⭐ Why I Built This
-
-Many currency converters rely heavily on live API requests and degrade quickly when network quality drops.
-
-I built this project to demonstrate how a front-end application can remain useful under real-world constraints by combining:
-
-- API request optimization
-- local caching strategies
-- offline fallback behavior
-- locale-aware UX
-- clean UI and practical accessibility improvements
+- OpenExchangeRates API
+- LocalStorage caching
+- Service Worker caching
+- Currency localization (Intl API)
+- Local flag mapping
 
 ---
 
-## 🚀 Features
+# ⭐ Project Goals
+
+Many currency converters depend entirely on external APIs and stop working when the network fails.
+
+This project demonstrates how a **front-end application can remain functional under real-world constraints** by combining:
+
+- smart API usage
+- local caching
+- offline fallback
+- progressive enhancement
+- installable web app architecture
+
+---
+
+# 🚀 Features
+
+## Core Features
 
 - Real-time currency conversion
-- Automatic **Demo Mode** when no API key is configured
+- Demo Mode when no API key is configured
 - Automatic currency detection based on browser locale
 - Offline conversion using cached exchange rates
-- Instant currency flag rendering
 - Currency names displayed in the user's language
-- BRL conversion using official **PTAX selling rate**
-- Smart fallback system (**API → Cache → Offline**)
+- Automatic currency flags
 - Copy converted result to clipboard
-- Input validation with inline status messages
+- Swap currencies instantly
+- Input validation with status messages
+
+## PWA Features
+
+- Installable application
+- Service Worker cache
+- Offline capability
+- Loading screen
+- Responsive layout for mobile and desktop
+
+## Execution Mode Detection
+
+The application automatically detects which data source is being used.
+
+Possible modes:
+
+| Mode | Description |
+|-----|-------------|
+| Demo | Simulated exchange rates |
+| API | Live rates from OpenExchangeRates |
+| Cache | Cached rates from previous API calls |
+| Offline Cache | Cached rates when offline |
+
+This information is displayed in the **Rate Info panel**.
 
 ---
 
-## ⚡ Performance Strategy
+# ⚡ Performance Strategy
 
 | Strategy | Purpose |
 |---|---|
-| Local currency-country mapping | Instant flag rendering |
-| Local JSON mapping | Removes unnecessary external flag lookups |
-| Cached exchange rates | Reduces repeated API calls |
-| Smart fallback system | Keeps the app usable when the network fails |
-| Debounced input | Prevents excessive calculations while typing |
+Local currency-country mapping | Instant flag rendering |
+Local JSON mapping | Avoid external flag lookups |
+Cached exchange rates | Reduce API calls |
+Service Worker cache | Faster loading |
+Debounced input | Prevent excessive recalculations |
 
 ---
 
-## 📦 APIs Used
+# 📦 API Used
 
 ### OpenExchangeRates
+
 Provides global currency exchange rates.
 
 Example request:
 
-```text
 https://openexchangerates.org/api/latest.json?app_id=YOUR_APP_ID
-```
 
 Base currency: **USD**
 
-### Central Bank of Brazil – PTAX
-Official exchange rate used when BRL is involved.
-
-Used when:
-- `BRL → other currency`
-- `other currency → BRL`
-
-Rate used:
-- **PTAX Venda (Selling Rate)**
+The application automatically converts between all supported currencies.
 
 ---
 
-## 🏳️ Currency Flags
+# 🏳️ Currency Flags
 
-Flags are rendered using **FlagCDN**.
+Flags are loaded using **FlagCDN**.
 
 Example:
 
-```text
 https://flagcdn.com/w80/us.png
-```
 
 Currency-to-country mapping is stored locally in:
 
-```text
 assets/currency-to-country.json
-```
 
-This allows **instant flag loading without additional API requests**.
+This allows **instant rendering without additional API calls**.
 
 ---
 
-## 🌐 Internationalization
+# 🌐 Internationalization
 
-Currency names are automatically translated using `Intl.DisplayNames`, and numeric formatting follows the user's browser language.
+Currency names and formatting are automatically localized using:
+
+- Intl.DisplayNames
+- Intl.NumberFormat
 
 Examples:
-- `pt-BR → BRL`
-- `en-US → USD`
-- `en-GB → GBP`
-- `fr-FR → EUR`
+
+| Locale | Currency |
+|------|------|
+pt-BR | BRL |
+en-US | USD |
+en-GB | GBP |
+fr-FR | EUR |
 
 ---
 
-## 💾 Offline Support
+# 💾 Offline Support
 
-Exchange rates are cached using `localStorage`.
+Exchange rates are cached using **LocalStorage**.
 
-| Data | Duration |
-|---|---|
-| OpenExchangeRates | 1 hour |
-| PTAX | 24 hours |
+| Data | Cache Duration |
+|----|----|
+OpenExchangeRates | 1 hour |
 
 Fallback logic:
 
-```text
-API → Cache → Offline mode
-```
+Live API → Local Cache → Offline Cache → Demo Mode
 
-If live services are unavailable, the application attempts to keep working with the latest saved data.
+This ensures the application continues functioning even during connectivity issues.
 
 ---
 
-## 🔎 Automatic Currency Detection
+# 🔎 Automatic Currency Detection
 
-The application attempts to infer the user's local currency using:
+The application attempts to infer the user's currency using:
 
-1. `Intl.Locale().maximize()`
-2. `navigator.language`
+1. Intl.Locale().maximize()
+2. navigator.language
 3. timezone heuristic fallback
 
 ---
 
-## 📂 Project Structure
+# 📂 Project Structure
 
-```text
 currency-converter/
+│
 ├── README.md
+├── LICENSE
 ├── .gitignore
 ├── config.example.js
+│
 ├── index.html
 ├── style.css
 ├── scripts.js
+├── service-worker.js
+├── manifest.json
+│
 └── assets/
     ├── currency-to-country.json
     ├── flag-placeholder.svg
+    ├── currency_converter_demo.gif
     ├── currency_converter_architecture.png
-    └── currency_converter_demo.gif
-```
 
 ---
 
-## ⚙️ Setup
+# ⚙️ Setup
 
-### 1. Clone the repository
+### Clone the repository
 
-```bash
 git clone https://github.com/rpollaco-hit/currency-converter.git
-```
 
-### 2. Create an OpenExchangeRates account
+### Create an OpenExchangeRates account
 
-Create an account and copy your `APP_ID`.
+https://openexchangerates.org
 
-### 3. Optional: enable live exchange rates
+### Enable live exchange rates (optional)
 
-The project runs in **Demo Mode** by default.
+Copy:
 
-To use live rates, copy `config.example.js` to `config.js` and add your real key:
+config.example.js
 
-```javascript
+to:
+
+config.js
+
+Then add your key:
+
 window.APP_CONFIG = {
   OER_APP_ID: "YOUR_APP_ID"
 };
-```
 
-`config.js` is ignored by Git, so your key stays local.
+config.js is ignored by Git so your key remains local.
 
-You can also override the key temporarily through the URL:
+### Run locally
 
-```text
-index.html?apikey=YOUR_APP_ID
-```
-
-If you skip this step, the app will still work in **Demo Mode** using simulated exchange rates.
-
-### 4. Run the project
-
-Open the project with **VS Code Live Server** or any static local server.
-
-Example:
-
-```text
 http://localhost:5500
-```
 
 ---
 
-## 🧩 Technologies
+# 🧩 Technologies
 
 - HTML5
 - CSS3
 - Vanilla JavaScript
 - OpenExchangeRates API
-- Brazil Central Bank PTAX API
-- FlagCDN
-- Intl API
+- Service Worker
+- Web App Manifest
 - LocalStorage
+- Intl API
+- FlagCDN
 
 ---
 
-## Known Limitations
+# Known Limitations
 
-- Live exchange rates require a valid **OpenExchangeRates APP_ID**
-- Demo Mode uses simulated exchange rates for portfolio and testing purposes
-- Public front-end apps should not expose real production API keys
-- `config.js` should stay local and should not be committed
-- GitHub Pages deployment link is not included yet
-- PWA installation is planned but not implemented yet
+- Live rates require a valid OpenExchangeRates APP_ID
+- Demo Mode uses simulated rates
+- Public front-end apps should not expose production API keys
+- config.js should remain local
+- Exchange rates depend on API availability
 
 ---
 
-## 📈 Future Improvements
+# 📈 Future Improvements
 
-Possible future improvements:
+Possible improvements:
 
-- Historical exchange-rate charts
+- Historical exchange rate charts
 - Cryptocurrency conversion
-- Progressive Web App (PWA)
 - Dark mode
-- Service Worker caching
 - Exchange-rate alerts
-- Desktop packaging with Electron
+- Favorite currencies
+- Travel currency planner
 - Mobile packaging with Capacitor
 
 ---
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
-**Anderson Marcondes Santana**  
+Anderson Marcondes Santana
+
 Business Analyst • Technology Consultant • Full-Stack Learner
 
-- GitHub: `https://github.com/rpollaco-hit`
-- LinkedIn: `https://www.linkedin.com/in/andersonmarcondessantana/`
+GitHub  
+https://github.com/rpollaco-hit
+
+LinkedIn  
+https://www.linkedin.com/in/andersonmarcondessantana/
 
 ---
 
-## 📜 License
+# 📜 License
 
 MIT License
 
 ---
 
-⭐ If you like this project, consider giving it a **star**.
+⭐ If you like this project, consider giving it a star.
