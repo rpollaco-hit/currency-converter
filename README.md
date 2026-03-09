@@ -1,3 +1,4 @@
+![Banner](assets/currency_converter_banner_pro.png)
 # 🌍 Currency Converter PWA
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-yellow)
