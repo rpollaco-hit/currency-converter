@@ -7,7 +7,7 @@
   <title>Currency Converter | Installable PWA</title>
 
   <meta name="description" content="Currency Converter built with HTML, CSS and JavaScript. Includes Demo Mode, live API support, installable PWA experience, flags, copy result button and responsive design." />
-  <meta name="keywords" content="currency converter, javascript project, pwa, exchange rates, html css javascript, demo mode, portfolio project" />
+  <meta name="keywords" content="currency converter, javascript project, pwa, exchange rates, html css javascript, portfolio project" />
   <meta name="author" content="Anderson Marcondes Santana" />
   <meta name="robots" content="index,follow" />
   <meta name="theme-color" content="#7C3AED" />
@@ -18,6 +18,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./assets/icon-192-coins-real.png">
   <link rel="stylesheet" href="./style.css" />
@@ -37,7 +38,7 @@
 <body>
   <div class="app-loading" id="appLoading" aria-live="polite">
     <div class="app-loading__card">
-      <img class="app-loading__icon" src="./assets/icon-192-coins-real.png" alt="Currency Converter app icon" />
+      <img class="app-loading__icon" src="./assets/icon-192-coins-real.png" alt="Currency Converter icon">
       <div class="app-loading__spinner" aria-hidden="true"></div>
       <p class="app-loading__title">Currency Converter</p>
       <p class="app-loading__text">Loading exchange tools...</p>
@@ -46,7 +47,7 @@
 
   <div class="page">
     <div class="app">
-      <img class="logo" src="./assets/exchange_currency.png" alt="Realistic exchange of Brazilian Real and US Dollar" />
+      <img class="logo" src="./assets/exchange_currency.png" alt="Currency exchange illustration" />
 
       <main class="card">
         <label class="field" for="currency-from">
@@ -71,7 +72,7 @@
         </div>
 
         <p class="rate-info" aria-live="polite"></p>
-        <p class="status-message" aria-live="polite"></p>
+        <p class="status-message" id="statusMessage" aria-live="polite"></p>
 
         <section class="result-card" aria-label="Conversion result">
           <div class="result-row">

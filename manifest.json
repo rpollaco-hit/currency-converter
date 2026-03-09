@@ -16,6 +16,7 @@
       "type": "image/png",
       "purpose": "any maskable"
     },
+    
     {
       "src": "./assets/icon-512-coins-real.png",
       "sizes": "512x512",
