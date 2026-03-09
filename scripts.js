@@ -18,6 +18,60 @@ const DEMO_RATES = {
 
 const DEMO_MODE = !CONFIG.OER_APP_ID || CONFIG.OER_APP_ID === "YOUR_APP_ID";
 
+const I18N = {
+  en: {
+    tooltipFrom: "Choose the currency you want to convert from.",
+    tooltipTo: "Choose the currency you want to convert to.",
+    tooltipAmount: "Enter the amount to convert.",
+    tooltipSwap: "Swap the selected currencies.",
+    tooltipRate: "Shows whether rates are simulated or live.",
+    tooltipInstall: "Install this app on your device.",
+    tooltipCopy: "Copy the converted amount.",
+    loadingText: "Loading exchange tools...",
+    installUnavailable: "Installation is not available right now. Try Chrome or Edge, or check if the app is already installed.",
+    iosInstall: 'To install on iPhone/iPad: tap Share and then "Add to Home Screen".',
+    installStarted: "App installation started.",
+    installDismissed: "Installation dismissed.",
+    installedOk: "App installed successfully.",
+    invalidAmount: "Please enter a valid amount.",
+    nothingToCopy: "Nothing to copy yet.",
+    copied: "Converted value copied.",
+    copyFailed: "Could not copy the value.",
+    sameCurrency: "Same currency selected.",
+    demoRate: "Demo mode: using simulated exchange rates.",
+    demoInfo: "Demo mode active. Add your API ID for live rates.",
+    calcError: "Unable to calculate conversion right now.",
+    initError: "Application could not be initialized."
+  },
+  pt: {
+    tooltipFrom: "Escolha a moeda de origem da conversão.",
+    tooltipTo: "Escolha a moeda de destino da conversão.",
+    tooltipAmount: "Informe o valor que deseja converter.",
+    tooltipSwap: "Inverte as moedas selecionadas.",
+    tooltipRate: "Mostra se a cotação está simulada ou ao vivo.",
+    tooltipInstall: "Instale este app no seu dispositivo.",
+    tooltipCopy: "Copia o valor convertido.",
+    loadingText: "Carregando ferramentas de câmbio...",
+    installUnavailable: "A instalação não está disponível agora. Tente no Chrome ou Edge, ou verifique se o app já está instalado.",
+    iosInstall: 'Para instalar no iPhone/iPad: toque em Compartilhar e depois em "Adicionar à Tela de Início".',
+    installStarted: "Instalação do app iniciada.",
+    installDismissed: "Instalação cancelada.",
+    installedOk: "App instalado com sucesso.",
+    invalidAmount: "Informe um valor válido.",
+    nothingToCopy: "Ainda não há valor para copiar.",
+    copied: "Valor convertido copiado.",
+    copyFailed: "Não foi possível copiar o valor.",
+    sameCurrency: "A mesma moeda foi selecionada.",
+    demoRate: "Modo demonstração: usando taxas simuladas.",
+    demoInfo: "Modo demonstração ativo. Adicione seu APP ID para cotações reais.",
+    calcError: "Não foi possível calcular a conversão agora.",
+    initError: "Não foi possível inicializar o aplicativo."
+  }
+};
+
+const localeLang = (navigator.language || "en").toLowerCase().startsWith("pt") ? "pt" : "en";
+const t = I18N[localeLang];
+
 const MAP_CURRENCY_TO_CCA2_URL = "./assets/currency-to-country.json";
 const FLAG_PLACEHOLDER = "./assets/flag-placeholder.svg";
 const FLAG_SIZE = "w80";
@@ -26,12 +80,13 @@ const OER_TTL = 60 * 60 * 1000;
 const selectFrom = document.querySelector(".currency-select-from");
 const selectTo = document.querySelector(".currency-select-to");
 const inputAmount = document.querySelector(".input-amount");
-const swapButton = document.querySelector(".swap-button");
-const rateInfo = document.querySelector(".rate-info");
+const swapButton = document.getElementById("swapButton");
+const rateInfo = document.getElementById("rateInfo");
 const statusMessage = document.getElementById("statusMessage");
 const copyButton = document.getElementById("copyButton");
 const installButton = document.getElementById("installButton");
 const appLoading = document.getElementById("appLoading");
+const loadingTextNode = document.querySelector(".app-loading__text");
 
 const fromCode = document.getElementById("fromCode");
 const fromName = document.getElementById("fromName");
@@ -48,12 +103,20 @@ let CURRENCY_TO_CCA2 = {};
 
 const currencyNames = new Intl.DisplayNames([navigator.language || "en"], { type: "currency" });
 
+function applyLocalizedTooltips() {
+  selectFrom.title = t.tooltipFrom;
+  selectTo.title = t.tooltipTo;
+  inputAmount.title = t.tooltipAmount;
+  if (swapButton) swapButton.title = t.tooltipSwap;
+  if (rateInfo) rateInfo.title = t.tooltipRate;
+  if (installButton) installButton.title = t.tooltipInstall;
+  if (copyButton) copyButton.title = t.tooltipCopy;
+  if (loadingTextNode) loadingTextNode.textContent = t.loadingText;
+}
+
 const cacheGet = (k) => {
-  try {
-    return JSON.parse(localStorage.getItem(k));
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(localStorage.getItem(k)); }
+  catch { return null; }
 };
 
 const cacheSet = (k, v) => localStorage.setItem(k, JSON.stringify({ t: Date.now(), v }));
@@ -228,7 +291,7 @@ async function convert() {
     fromValue.textContent = "—";
     toValue.textContent = "—";
     setRateInfo("");
-    setStatus("Please enter a valid amount.", "warning");
+    setStatus(t.invalidAmount, "warning");
     return;
   }
 
@@ -246,16 +309,16 @@ async function convert() {
     toValue.textContent = formatNumber(converted);
 
     if (from === to) {
-      setRateInfo("Same currency selected.");
+      setRateInfo(t.sameCurrency);
     } else if (ratesResp.mode === "demo") {
-      setRateInfo("Demo mode: using simulated exchange rates.");
+      setRateInfo(t.demoRate);
     } else {
       const dt = new Date((ratesData.timestamp || Math.floor(Date.now() / 1000)) * 1000);
       setRateInfo(`Live rates: OpenExchangeRates (${ratesResp.mode}) • ${dt.toLocaleString()}`);
     }
 
     if (DEMO_MODE) {
-      setStatus("Demo mode active. Add your API ID for live rates.", "info");
+      setStatus(t.demoInfo, "info");
     } else {
       setStatus("", "info");
     }
@@ -264,7 +327,7 @@ async function convert() {
     fromValue.textContent = formatNumber(amount);
     toValue.textContent = "—";
     setRateInfo("");
-    setStatus("Unable to calculate conversion right now.", "error");
+    setStatus(t.calcError, "error");
   }
 }
 
@@ -285,18 +348,18 @@ function swapCurrencies() {
 async function copyConvertedValue() {
   const text = toValue.textContent?.trim();
   if (!text || text === "—") {
-    setStatus("Nothing to copy yet.", "warning");
+    setStatus(t.nothingToCopy, "warning");
     return;
   }
 
   try {
     await navigator.clipboard.writeText(text);
-    setStatus("Converted value copied.", "info");
+    setStatus(t.copied, "info");
     setTimeout(() => {
-      if (statusMessage?.textContent === "Converted value copied.") setStatus("", "info");
+      if (statusMessage?.textContent === t.copied) setStatus("", "info");
     }, 1800);
   } catch {
-    setStatus("Could not copy the value.", "error");
+    setStatus(t.copyFailed, "error");
   }
 }
 
@@ -307,11 +370,10 @@ async function handleInstallClick() {
     deferredInstallPrompt = null;
 
     if (choiceResult?.outcome === "accepted") {
-      setStatus("App installation started.", "info");
+      setStatus(t.installStarted, "info");
       installButton.disabled = true;
-      installButton.textContent = "Installed";
     } else {
-      setStatus("Installation dismissed.", "warning");
+      setStatus(t.installDismissed, "warning");
     }
     return;
   }
@@ -320,11 +382,11 @@ async function handleInstallClick() {
   const isSafari = /^((?!chrome|android).)*safari/i.test(window.navigator.userAgent);
 
   if (isIOS && isSafari) {
-    setStatus('To install on iPhone/iPad: tap Share and then "Add to Home Screen".', "info");
+    setStatus(t.iosInstall, "info");
     return;
   }
 
-  setStatus("Installation is not available right now. Try Chrome or Edge, or check if the app is already installed.", "warning");
+  setStatus(t.installUnavailable, "warning");
 }
 
 const REGION_TO_CURRENCY = {
@@ -357,6 +419,8 @@ function guessLocalCurrency() {
 }
 
 async function init() {
+  applyLocalizedTooltips();
+
   try {
     const mapRes = await fetch(MAP_CURRENCY_TO_CCA2_URL);
     if (mapRes.ok) {
@@ -381,8 +445,8 @@ async function init() {
   selectFrom.addEventListener("change", () => { updateUI(); scheduleConvert(); });
   selectTo.addEventListener("change", () => { updateUI(); scheduleConvert(); });
   inputAmount.addEventListener("input", scheduleConvert);
-  swapButton.addEventListener("click", swapCurrencies);
-  copyButton.addEventListener("click", copyConvertedValue);
+  if (swapButton) swapButton.addEventListener("click", swapCurrencies);
+  if (copyButton) copyButton.addEventListener("click", copyConvertedValue);
   if (installButton) installButton.addEventListener("click", handleInstallClick);
 
   hideLoadingScreen();
@@ -396,18 +460,15 @@ window.addEventListener("beforeinstallprompt", (event) => {
 
 window.addEventListener("appinstalled", () => {
   deferredInstallPrompt = null;
-  if (installButton) {
-    installButton.disabled = true;
-    installButton.textContent = "Installed";
-  }
-  setStatus("App installed successfully.", "info");
+  if (installButton) installButton.disabled = true;
+  setStatus(t.installedOk, "info");
 });
 
 document.addEventListener("DOMContentLoaded", () => {
   if (installButton) installButton.disabled = false;
   init().catch((error) => {
     console.error("INIT ERROR:", error);
-    setStatus("Application could not be initialized.", "error");
+    setStatus(t.initError, "error");
     hideLoadingScreen();
   });
 });

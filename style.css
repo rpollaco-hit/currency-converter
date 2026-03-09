@@ -10,16 +10,13 @@
   --bg-dark: #5B21B6;
   --card: #F4F4F4;
   --text: #111827;
-  --muted: #6B7280;
   --white: #FFFFFF;
   --soft-purple: #F3E8FF;
   --soft-purple-2: #EDE9FE;
   --border: #D1D5DB;
 }
 
-body {
-  background: var(--bg);
-}
+body { background: var(--bg); }
 
 .page {
   min-height: 100vh;
@@ -78,13 +75,16 @@ select,
 }
 
 select:focus,
-.input-amount:focus {
-  border-color: var(--bg);
+.input-amount:focus { border-color: var(--bg); }
+
+.input-amount.is-invalid {
+  border-color: #DC2626;
+  background: #FEF2F2;
 }
 
 .swap-button,
 .copy-button,
-.install-button {
+.install-icon-button {
   border: 0;
   border-radius: 10px;
   cursor: pointer;
@@ -99,27 +99,9 @@ select:focus,
   font-size: 15px;
 }
 
-.app-actions {
-  display: grid;
-  margin-top: 10px;
-}
-
-.install-button {
-  width: 100%;
-  height: 40px;
-  background: linear-gradient(135deg, #A78BFA, #7C3AED);
-  color: var(--white);
-  font-size: 14px;
-  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.22);
-}
-
-.install-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
 .swap-button:hover,
 .copy-button:hover,
-.install-button:hover {
+.install-icon-button:hover {
   opacity: 0.96;
 }
 
@@ -139,6 +121,10 @@ select:focus,
   color: var(--bg-dark);
   margin-top: 2px;
 }
+
+.status-message.is-info { color: #5B21B6; }
+.status-message.is-warning { color: #B45309; }
+.status-message.is-error { color: #DC2626; }
 
 .result-card {
   margin-top: 10px;
@@ -255,19 +241,26 @@ select:focus,
 }
 
 .app-footer {
-  text-align: center;
+  width: 100%;
   color: var(--white);
   font-size: 12px;
   opacity: 0.95;
 }
 
-.app-footer strong {
-  font-weight: 700;
+.footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
 }
 
-.footer-links {
-  margin-top: 4px;
+.footer-left {
+  text-align: left;
 }
+
+.app-footer strong { font-weight: 700; }
+
+.footer-links { margin-top: 4px; }
 
 .footer-links a {
   color: var(--white);
@@ -275,12 +268,31 @@ select:focus,
   font-weight: 600;
 }
 
-.footer-links a:hover {
-  text-decoration: underline;
-  
+.footer-links a:hover { text-decoration: underline; }
+
+.install-icon-button {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.28);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
 }
 
-/* Loading screen */
+.install-icon-button img {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  border-radius: 7px;
+}
+
+.install-icon-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .app-loading {
   position: fixed;
   inset: 0;
@@ -340,43 +352,14 @@ select:focus,
   opacity: 0.92;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 420px) {
-  .page {
-    padding: 12px;
-  }
-
-  .logo {
-    width: min(260px, 84vw);
-  }
-
-  .card {
-    padding: 12px;
-  }
-
-  .result-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-
-  .result-amount-actions {
-    justify-items: stretch;
-  }
-
-  .result-amount-box,
-  .copy-button {
-    width: 100%;
-  }
+  .page { padding: 12px; }
+  .logo { width: min(260px, 84vw); }
+  .card { padding: 12px; }
+  .result-row { grid-template-columns: 1fr; gap: 8px; }
+  .result-amount-actions { justify-items: stretch; }
+  .result-amount-box, .copy-button { width: 100%; }
+  .footer-row { align-items: flex-start; }
 }
-
-.input-amount.is-invalid{
-  border-color:#DC2626;
-  background:#FEF2F2;
-}
-
-.status-message.is-info{color:#5B21B6;}
-.status-message.is-warning{color:#B45309;}
-.status-message.is-error{color:#DC2626;}

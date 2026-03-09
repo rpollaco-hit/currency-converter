@@ -65,13 +65,9 @@
           <input id="amount-input" class="input-amount" type="text" placeholder="100" inputmode="decimal" aria-label="Amount" />
         </label>
 
-        <button type="button" class="swap-button" aria-label="Swap currencies">⇄ Swap</button>
+        <button type="button" class="swap-button" id="swapButton" aria-label="Swap currencies">⇄ Swap</button>
 
-        <div class="app-actions">
-          <button type="button" class="install-button" id="installButton" aria-label="Install app">Install App</button>
-        </div>
-
-        <p class="rate-info" aria-live="polite"></p>
+        <p class="rate-info" id="rateInfo" aria-live="polite"></p>
         <p class="status-message" id="statusMessage" aria-live="polite"></p>
 
         <section class="result-card" aria-label="Conversion result">
@@ -115,11 +111,19 @@
       </main>
 
       <footer class="app-footer">
-        <p>Built by <strong>Anderson Marcondes Santana</strong></p>
-        <div class="footer-links">
-          <a href="https://github.com/rpollaco-hit" target="_blank" rel="noopener noreferrer">GitHub</a>
-          <span>•</span>
-          <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <div class="footer-row">
+          <div class="footer-left">
+            <p>Built by <strong>Anderson Marcondes Santana</strong></p>
+            <div class="footer-links">
+              <a href="https://github.com/rpollaco-hit" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <span>•</span>
+              <a href="https://www.linkedin.com/in/andersonmarcondessantana/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            </div>
+          </div>
+
+          <button type="button" class="install-icon-button" id="installButton" aria-label="Install app" title="Install App">
+            <img src="./assets/icon-192-coins-real.png" alt="" aria-hidden="true">
+          </button>
         </div>
       </footer>
     </div>

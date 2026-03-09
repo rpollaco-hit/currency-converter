@@ -31,9 +31,9 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-
 self.addEventListener("fetch", (event) => {
   const request = event.request;
+
   if (request.method !== "GET") return;
 
   event.respondWith(
@@ -45,11 +45,15 @@ self.addEventListener("fetch", (event) => {
           if (!response || response.status !== 200 || response.type === "opaque") {
             return response;
           }
+
           const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, responseClone));
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(request, responseClone);
+          });
+
           return response;
         })
-        .catch(() => caches.match("./index.html"))
-    )
+        .catch(() => caches.match("./index.html"));
+    })
   );
 });
