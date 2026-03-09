@@ -26,12 +26,7 @@
   <script>
     window.APP_CONFIG = window.APP_CONFIG || {};
   </script>
-  <script>
-    const configScript = document.createElement("script");
-    configScript.src = "./config.js";
-    configScript.onerror = () => console.info("config.js not found: running in Demo Mode.");
-    document.head.appendChild(configScript);
-  </script>
+  <script src="./config.js"></script>
   <script src="./scripts.js" defer></script>
 </head>
 
