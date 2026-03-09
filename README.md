@@ -33,12 +33,6 @@ The application works **even without an API key** thanks to the built-in **Demo 
 
 ---
 
-# 🎬 Demo
-
-![Demo](assets/currency_converter_demo.gif)
-
----
-
 # 🖼️ Architecture Overview
 
 ![Architecture](assets/currency_converter_architecture.png)
