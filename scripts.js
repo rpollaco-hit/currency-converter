@@ -1,6 +1,11 @@
-const CONFIG = {
-  OER_APP_ID: (window.APP_CONFIG && window.APP_CONFIG.OER_APP_ID) || "YOUR_APP_ID",
-};
+function getAppId() {
+  return (window.APP_CONFIG && window.APP_CONFIG.OER_APP_ID) || "YOUR_APP_ID";
+}
+
+function isDemoMode() {
+  const appId = getAppId();
+  return !appId || appId === "YOUR_APP_ID";
+}
 
 const DEMO_RATES = {
   USD: 1,
@@ -15,8 +20,6 @@ const DEMO_RATES = {
   INR: 83.0,
   MXN: 17.1,
 };
-
-const DEMO_MODE = !CONFIG.OER_APP_ID || CONFIG.OER_APP_ID === "YOUR_APP_ID";
 
 const I18N = {
   en: {
@@ -40,6 +43,15 @@ const I18N = {
     sameCurrency: "Same currency selected.",
     demoRate: "Demo mode: using simulated exchange rates.",
     demoInfo: "Demo mode active. Add your API ID for live rates.",
+    modeLive: "Execution mode: Live API",
+    modeCache: "Execution mode: Cached rates",
+    modeFallback: "Execution mode: Fallback cache",
+    modeOffline: "Execution mode: Offline cache",
+    modeDemoLabel: "Execution mode: Demo",
+    statusLive: "Connected to live exchange rates.",
+    statusCache: "Using cached exchange rates saved on this device.",
+    statusFallback: "Live request failed. Using the last saved exchange rates.",
+    statusOffline: "You appear to be offline. Using saved exchange rates.",
     calcError: "Unable to calculate conversion right now.",
     initError: "Application could not be initialized."
   },
@@ -64,6 +76,15 @@ const I18N = {
     sameCurrency: "A mesma moeda foi selecionada.",
     demoRate: "Modo demonstração: usando taxas simuladas.",
     demoInfo: "Modo demonstração ativo. Adicione seu APP ID para cotações reais.",
+    modeLive: "Modo de execução: API online",
+    modeCache: "Modo de execução: Cache local",
+    modeFallback: "Modo de execução: Cache de contingência",
+    modeOffline: "Modo de execução: Offline com cache",
+    modeDemoLabel: "Modo de execução: Demonstração",
+    statusLive: "Conectado às cotações online.",
+    statusCache: "Usando cotações em cache salvas neste dispositivo.",
+    statusFallback: "A chamada online falhou. Usando a última cotação salva.",
+    statusOffline: "Você parece estar offline. Usando cotações salvas.",
     calcError: "Não foi possível calcular a conversão agora.",
     initError: "Não foi possível inicializar o aplicativo."
   }
@@ -247,8 +268,52 @@ async function fetchWithCache(key, ttlMs, fetcher) {
   }
 }
 
+function getExecutionModeMeta(ratesResp, ratesData, fromEqualsTo = false) {
+  if (fromEqualsTo) {
+    return {
+      rateText: t.sameCurrency,
+      statusText: isDemoMode() ? t.demoInfo : "",
+      statusType: isDemoMode() ? "info" : "info",
+    };
+  }
+
+  if (ratesResp.mode === "demo") {
+    return {
+      rateText: t.demoRate,
+      statusText: t.demoInfo,
+      statusType: "info",
+    };
+  }
+
+  const dt = new Date((ratesData.timestamp || Math.floor(Date.now() / 1000)) * 1000);
+  const when = dt.toLocaleString();
+
+  if (ratesResp.mode === "api") {
+    return {
+      rateText: `${t.modeLive}: OpenExchangeRates • ${when}`,
+      statusText: t.statusLive,
+      statusType: "info",
+    };
+  }
+
+  if (ratesResp.mode === "cache") {
+    return {
+      rateText: `${t.modeCache}: OpenExchangeRates • ${when}`,
+      statusText: t.statusCache,
+      statusType: "warning",
+    };
+  }
+
+  const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+  return {
+    rateText: `${offline ? t.modeOffline : t.modeFallback}: OpenExchangeRates • ${when}`,
+    statusText: offline ? t.statusOffline : t.statusFallback,
+    statusType: "warning",
+  };
+}
+
 async function getRates() {
-  if (DEMO_MODE) {
+  if (isDemoMode()) {
     return {
       data: {
         timestamp: Math.floor(Date.now() / 1000),
@@ -259,7 +324,7 @@ async function getRates() {
   }
 
   return fetchWithCache("oer_latest_usd", OER_TTL, async () => {
-    const url = `https://openexchangerates.org/api/latest.json?app_id=${encodeURIComponent(CONFIG.OER_APP_ID)}`;
+    const url = `https://openexchangerates.org/api/latest.json?app_id=${encodeURIComponent(getAppId())}`;
     const response = await fetch(url);
     const json = await response.json();
 
@@ -308,20 +373,9 @@ async function convert() {
     fromValue.textContent = formatNumber(amount);
     toValue.textContent = formatNumber(converted);
 
-    if (from === to) {
-      setRateInfo(t.sameCurrency);
-    } else if (ratesResp.mode === "demo") {
-      setRateInfo(t.demoRate);
-    } else {
-      const dt = new Date((ratesData.timestamp || Math.floor(Date.now() / 1000)) * 1000);
-      setRateInfo(`Live rates: OpenExchangeRates (${ratesResp.mode}) • ${dt.toLocaleString()}`);
-    }
-
-    if (DEMO_MODE) {
-      setStatus(t.demoInfo, "info");
-    } else {
-      setStatus("", "info");
-    }
+    const executionMeta = getExecutionModeMeta(ratesResp, ratesData, from === to);
+    setRateInfo(executionMeta.rateText);
+    setStatus(executionMeta.statusText, executionMeta.statusType);
   } catch (error) {
     console.error("CONVERT ERROR:", error);
     fromValue.textContent = formatNumber(amount);
