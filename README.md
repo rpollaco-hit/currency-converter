@@ -1,3 +1,4 @@
+![Banner](assets/currency_converter_banner_pro.png)
 # 🌍 Currency Converter PWA
 
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla-yellow)
@@ -29,12 +30,6 @@ It was designed as a **portfolio-quality front-end project**, demonstrating mode
 https://rpollaco-hit.github.io/currency-converter/
 
 The application works **even without an API key** thanks to the built-in **Demo Mode**.
-
----
-
-# 🎬 Demo
-
-![Demo](assets/currency_converter_demo.gif)
 
 ---
 
